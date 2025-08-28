@@ -1,0 +1,657 @@
+{
+  "info": {
+    "name": "Binance Symbol API",
+    "description": "Complete REST API for Binance cryptocurrency symbol lookup, price monitoring, and custom token management",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:10000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Service Information",
+      "item": [
+        {
+          "name": "Get Service Information",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Get service information and available endpoints"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test(\"Has service information\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('service');",
+                  "    pm.expect(jsonData).to.have.property('status', 'running');",
+                  "    pm.expect(jsonData).to.have.property('endpoints');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Detailed health check with service statistics"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Health check response\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status', 'running');",
+                  "    pm.expect(jsonData).to.have.property('stats');",
+                  "    pm.expect(jsonData.stats).to.have.property('totalSymbols');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Symbol Management",
+      "item": [
+        {
+          "name": "Get All Symbols",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/symbols?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbols"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "quote",
+                  "value": "USDT",
+                  "disabled": true
+                },
+                {
+                  "key": "base",
+                  "value": "BTC",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all available trading symbols with optional filtering"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('symbols');",
+                  "    pm.expect(jsonData.symbols).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Symbols - BTC",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/BTC?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "BTC"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Search for BTC-related symbols"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Search results\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('query', 'BTC');",
+                  "    pm.expect(jsonData).to.have.property('symbols');",
+                  "    pm.expect(jsonData.symbols).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Symbols - KOGE",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/KOGE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "KOGE"]
+            },
+            "description": "Search for KOGE Alpha token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"KOGE search results\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('query', 'KOGE');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Specific Symbol - BTCUSDT",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/symbol/BTCUSDT",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbol", "BTCUSDT"]
+            },
+            "description": "Get BTCUSDT symbol information with current price"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Symbol information\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('symbol');",
+                  "    pm.expect(jsonData.symbol).to.have.property('symbol', 'BTCUSDT');",
+                  "    pm.expect(jsonData).to.have.property('currentPrice');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Specific Symbol - KOGE",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/symbol/KOGEUSDT",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbol", "KOGEUSDT"]
+            },
+            "description": "Get KOGE Alpha token information"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test(\"KOGE symbol information\", function () {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('success', true);",
+                  "        pm.expect(jsonData.symbol).to.have.property('baseAsset', 'KOGE');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Coin Pairs - BTC",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coin/BTC",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coin", "BTC"]
+            },
+            "description": "Get all trading pairs for Bitcoin"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"BTC pairs\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('coin', 'BTC');",
+                  "    pm.expect(jsonData).to.have.property('pairs');",
+                  "    pm.expect(jsonData.pairs).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Custom Symbol - KOGE Alpha",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"KOGEUSDT\",\n  \"baseAsset\": \"KOGE\",\n  \"quoteAsset\": \"USDT\",\n  \"name\": \"KOGE Alpha Token - BSC Contract: 0xe6df05ce8c8301223373cf5b969afcb1498c5528\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/symbol/custom",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbol", "custom"]
+            },
+            "description": "Add KOGE Alpha token as custom symbol"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Custom symbol added\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('symbol');",
+                  "    pm.expect(jsonData.symbol).to.have.property('isCustom', true);",
+                  "    pm.expect(jsonData.symbol).to.have.property('baseAsset', 'KOGE');",
+                  "});",
+                  "",
+                  "// Store custom symbol for other tests",
+                  "pm.globals.set(\"customSymbol\", \"KOGEUSDT\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Price Information",
+      "item": [
+        {
+          "name": "Get Current Prices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/prices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "prices"]
+            },
+            "description": "Get current prices for all tracked symbols"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Price information\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('prices');",
+                  "    pm.expect(jsonData).to.have.property('symbols');",
+                  "    pm.expect(jsonData.prices).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "Get API Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "docs"]
+            },
+            "description": "Get API documentation in JSON format"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Documentation structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('title');",
+                  "    pm.expect(jsonData).to.have.property('endpoints');",
+                  "    pm.expect(jsonData).to.have.property('examples');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Advanced Examples",
+      "item": [
+        {
+          "name": "Get USDT Pairs Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/symbols?quote=USDT&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbols"],
+              "query": [
+                {
+                  "key": "quote",
+                  "value": "USDT"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get only USDT trading pairs"
+          }
+        },
+        {
+          "name": "Search ETH Symbols",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/ETH?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "ETH"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search for Ethereum-related symbols"
+          }
+        },
+        {
+          "name": "Get ETH Pairs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coin/ETH",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coin", "ETH"]
+            },
+            "description": "Get all Ethereum trading pairs"
+          }
+        },
+        {
+          "name": "Add Another Custom Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"MYTOKEN\",\n  \"baseAsset\": \"MTK\",\n  \"quoteAsset\": \"USDT\",\n  \"name\": \"My Custom Token Example\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/symbol/custom",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbol", "custom"]
+            },
+            "description": "Add another custom token example"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Testing",
+      "item": [
+        {
+          "name": "Symbol Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/symbol/INVALIDTOKEN",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbol", "INVALIDTOKEN"]
+            },
+            "description": "Test error response for non-existent symbol"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Error response structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', false);",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Too Short Query",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/A",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "A"]
+            },
+            "description": "Test error for query too short"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message for short query\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', false);",
+                  "    pm.expect(jsonData.error).to.include('at least 2 characters');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid Custom Symbol Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"INVALID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/symbol/custom",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "symbol", "custom"]
+            },
+            "description": "Test error for missing required fields"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Error for missing baseAsset\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', false);",
+                  "    pm.expect(jsonData.error).to.include('required');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Global pre-request script",
+          "console.log('🚀 Testing Binance Symbol API');",
+          "console.log('📍 Base URL:', pm.variables.get('baseUrl'));",
+          "",
+          "// Check if server is running (optional)",
+          "if (pm.request.url.path && pm.request.url.path[0] !== 'health') {",
+          "    // Only for non-health endpoints to avoid circular dependency",
+          "    console.log('💡 Make sure server is running with: npm start');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is reasonable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "// Log response for debugging",
+          "if (pm.response.code >= 400) {",
+          "    console.log('❌ Error Response:', pm.response.text());",
+          "} else {",
+          "    console.log('✅ Request successful');",
+          "}"
+        ]
+      }
+    }
+  ]
+}
