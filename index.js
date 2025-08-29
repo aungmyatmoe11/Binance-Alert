@@ -22,6 +22,25 @@ app.use((req, res, next) => {
   next()
 })
 
+// Dynamic configuration with multiple sources
+const getIntervalSeconds = () => {
+  // Priority: Command line args > Environment variable > Default
+  const args = process.argv.slice(2)
+  const intervalArg = args.find((arg) => arg.startsWith("--interval="))
+
+  if (intervalArg) {
+    const seconds = parseInt(intervalArg.split("=")[1])
+    if (seconds && seconds > 0) return seconds
+  }
+
+  if (process.env.BINANCE_INTERVAL) {
+    const seconds = parseInt(process.env.BINANCE_INTERVAL)
+    if (seconds && seconds > 0) return seconds
+  }
+
+  return 2 // Default 2 seconds
+}
+
 // Configuration
 const config = {
   // Target cryptocurrency symbols (USDT pairs)
@@ -37,7 +56,10 @@ const config = {
     priceEndpoint: "/api/v3/ticker/price",
     timeout: 5000,
   },
-  cronInterval: "*/2 * * * * *", // Every 2 seconds
+  intervalSeconds: getIntervalSeconds(),
+  get cronInterval() {
+    return `*/${this.intervalSeconds} * * * * *` // Dynamic cron expression
+  },
   port: process.env.PORT || 10000, // Port for Render web service
 }
 
@@ -144,6 +166,8 @@ app.get("/", (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     tracking: config.symbols,
+    interval_seconds: config.intervalSeconds,
+    cron_expression: config.cronInterval,
     endpoints: {
       health: "GET /",
       symbols: "GET /api/symbols",
@@ -151,6 +175,7 @@ app.get("/", (req, res) => {
       symbol: "GET /api/symbol/:symbol",
       prices: "GET /api/prices",
       coin: "GET /api/coin/:coin",
+      setInterval: "POST /api/config/interval",
     },
   })
 })
@@ -162,7 +187,61 @@ app.get("/health", (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     tracking: config.symbols,
+    interval_seconds: config.intervalSeconds,
+    cron_expression: config.cronInterval,
     stats: symbolService.getStats(),
+  })
+})
+
+// Dynamic interval configuration endpoint
+app.post("/api/config/interval", (req, res) => {
+  try {
+    const { seconds } = req.body
+
+    if (!seconds || seconds < 1 || seconds > 300) {
+      return res.status(400).json({
+        success: false,
+        error: "Interval must be between 1 and 300 seconds",
+        current_interval: config.intervalSeconds,
+      })
+    }
+
+    const oldInterval = config.intervalSeconds
+    config.intervalSeconds = seconds
+
+    res.json({
+      success: true,
+      message: "Interval updated successfully",
+      old_interval: oldInterval,
+      new_interval: config.intervalSeconds,
+      cron_expression: config.cronInterval,
+      note: "Restart server for changes to take effect",
+    })
+
+    console.log(`📊 Interval changed from ${oldInterval}s to ${seconds}s`)
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    })
+  }
+})
+
+// Get current configuration
+app.get("/api/config", (req, res) => {
+  res.json({
+    success: true,
+    config: {
+      interval_seconds: config.intervalSeconds,
+      cron_expression: config.cronInterval,
+      port: config.port,
+      tracking_symbols: config.symbols,
+      rate_limit_info: {
+        binance_rate_limit: "1200 calls per minute",
+        current_calls_per_minute: Math.round(60 / config.intervalSeconds),
+        safe_minimum_interval: "0.05 seconds (20 per second max)",
+      },
+    },
   })
 })
 

@@ -1,0 +1,615 @@
+{
+  "info": {
+    "name": "Cryptocurrency APIs - Binance + CoinGecko",
+    "description": "Complete REST API collection for both Binance and CoinGecko cryptocurrency data including coin selection workflow for UI development",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "binanceUrl",
+      "value": "http://localhost:10000",
+      "type": "string"
+    },
+    {
+      "key": "coingeckoUrl",
+      "value": "http://localhost:10001",
+      "type": "string"
+    },
+    {
+      "key": "selectedCoinId",
+      "value": "bitcoin",
+      "type": "string",
+      "description": "Currently selected coin ID for UI workflow"
+    },
+    {
+      "key": "selectedSymbol",
+      "value": "BTCUSDT",
+      "type": "string",
+      "description": "Currently selected symbol for Binance"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Service Status",
+      "description": "Check if both APIs are running",
+      "item": [
+        {
+          "name": "Binance API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{binanceUrl}}/health",
+              "host": ["{{binanceUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check Binance API health status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Binance API is running\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('running');",
+                  "});",
+                  "",
+                  "console.log('✅ Binance API Status: Running');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CoinGecko API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/health",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check CoinGecko API health status"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"CoinGecko API is running\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('running');",
+                  "});",
+                  "",
+                  "console.log('✅ CoinGecko API Status: Running');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. UI Workflow - Coin Selection",
+      "description": "Main APIs for UI coin selection workflow",
+      "item": [
+        {
+          "name": "Get Top Coins for Selection (UI Main List)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/top?limit=50&currency=usd",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "top"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Number of coins to show in UI list"
+                },
+                {
+                  "key": "currency",
+                  "value": "usd"
+                }
+              ]
+            },
+            "description": "မူလ coin selection list အတွက် top 50 coins ရယူမယ်။ UI မှာ dropdown ဒါမှမဟုတ် list အနေနဲ့ ပြသဖို့"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get top coins successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.coins).to.be.an('array');",
+                  "    pm.expect(jsonData.coins.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "// Store first coin for demo",
+                  "var response = pm.response.json();",
+                  "if (response.coins && response.coins.length > 0) {",
+                  "    pm.globals.set('selectedCoinId', response.coins[0].id);",
+                  "    pm.globals.set('selectedCoinName', response.coins[0].name);",
+                  "    console.log('🪙 Auto-selected coin:', response.coins[0].name);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Coins (UI Search Function)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/search/bitcoin?limit=20",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "search", "bitcoin"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "UI search box အတွက်။ User က coin name ဒါမှမဟုတ် symbol ရိုက်ပြီး search လုပ်နိုင်မယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Search coins successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.coins).to.be.an('array');",
+                  "});",
+                  "",
+                  "console.log('🔍 Search completed for: bitcoin');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Selected Coin Details (After User Selection)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/coin/{{selectedCoinId}}?detailed=true",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "coin", "{{selectedCoinId}}"],
+              "query": [
+                {
+                  "key": "detailed",
+                  "value": "true",
+                  "description": "Get comprehensive coin information"
+                }
+              ]
+            },
+            "description": "User က coin ရွေးချယ်ပြီးရင် အဲ့ coin ရဲ့ detailed information ရယူမယ်။ Price, market cap, description စတာတွေ ပါမယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get coin details successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.coin).to.be.an('object');",
+                  "});",
+                  "",
+                  "var response = pm.response.json();",
+                  "if (response.coin && response.coin.currentPrice) {",
+                  "    console.log('💰 Current Price: $' + response.coin.currentPrice.usd);",
+                  "    console.log('📈 24h Change: ' + response.coin.currentPrice.usd_24h_change + '%');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Multiple Selected Coins Prices (Batch Request)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/coin/bitcoin,ethereum,binancecoin",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "coin", "bitcoin,ethereum,binancecoin"]
+            },
+            "description": "User က multiple coins ရွေးချယ်ထားရင် တစ်ပြိုင်နက် price တွေ ရယူမယ်။ Portfolio tracking အတွက် သုံးလို့ရမယ်"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Price Monitoring APIs",
+      "description": "Real-time price monitoring for selected coins",
+      "item": [
+        {
+          "name": "Get Current Prices - CoinGecko (Selected Coins)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/prices",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "prices"]
+            },
+            "description": "လက်ရှိ track လုပ်နေတဲ့ coins တွေရဲ့ prices ရယူမယ် (Bitcoin, Ethereum, BNB, Dogecoin)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get current prices successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.prices).to.be.an('object');",
+                  "});",
+                  "",
+                  "var response = pm.response.json();",
+                  "if (response.prices) {",
+                  "    Object.keys(response.prices).forEach(function(coin) {",
+                  "        var price = response.prices[coin];",
+                  "        console.log('💰 ' + coin + ': $' + price.usd + ' (' + price.usd_24h_change.toFixed(2) + '%)');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current Prices - Binance (Trading Pairs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{binanceUrl}}/api/prices",
+              "host": ["{{binanceUrl}}"],
+              "path": ["api", "prices"]
+            },
+            "description": "Binance exchange မှ trading prices ရယူမယ်။ Real-time trading data အတွက်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get Binance prices successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.prices).to.be.an('array');",
+                  "});",
+                  "",
+                  "var response = pm.response.json();",
+                  "if (response.prices) {",
+                  "    response.prices.forEach(function(item) {",
+                  "        console.log('💱 ' + item.symbol + ': $' + parseFloat(item.price).toLocaleString());",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. KOGE Alpha Token",
+      "description": "Special endpoints for KOGE Alpha token",
+      "item": [
+        {
+          "name": "Find KOGE Alpha Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/koge",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "koge"]
+            },
+            "description": "KOGE Alpha token ကို ရှာမယ်။ Contract address နဲ့ together ရှာမယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"KOGE search completed\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "var response = pm.response.json();",
+                  "console.log('🪙 Found ' + response.found + ' KOGE-related tokens');",
+                  "if (response.coins && response.coins.length > 0) {",
+                  "    response.coins.forEach(function(coin, index) {",
+                  "        console.log('   ' + (index + 1) + '. ' + coin.name + ' (' + coin.symbol + ')');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Find KOGE by Contract Address",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/contract/0xe6df05ce8c8301223373cf5b969afcb1498c5528",
+              "host": ["{{coingeckoUrl}}"],
+              "path": [
+                "api",
+                "contract",
+                "0xe6df05ce8c8301223373cf5b969afcb1498c5528"
+              ]
+            },
+            "description": "KOGE Alpha token ကို BSC contract address နဲ့ ရှာမယ်"
+          }
+        },
+        {
+          "name": "Add KOGE as Custom Symbol (Binance)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"KOGEUSDT\",\n  \"baseAsset\": \"KOGE\",\n  \"quoteAsset\": \"USDT\",\n  \"name\": \"KOGE Alpha Token - BSC Contract: 0xe6df05ce8c8301223373cf5b969afcb1498c5528\"\n}"
+            },
+            "url": {
+              "raw": "{{binanceUrl}}/api/symbol/custom",
+              "host": ["{{binanceUrl}}"],
+              "path": ["api", "symbol", "custom"]
+            },
+            "description": "KOGE token ကို Binance API မှာ custom symbol အနေနဲ့ ထည့်မယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"KOGE custom symbol added\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "console.log('✅ KOGE Alpha token added as custom symbol');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. UI Helper APIs",
+      "description": "Additional APIs for UI features",
+      "item": [
+        {
+          "name": "Get Trending Coins (UI Popular Section)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/trending",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "trending"]
+            },
+            "description": "လက်ရှိ trending ဖြစ်နေတဲ့ coins တွေ။ UI မှာ 'Popular' ဒါမှမဟုတ် 'Trending' section အတွက်"
+          }
+        },
+        {
+          "name": "Get All Binance Trading Pairs (UI Trading Focus)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{binanceUrl}}/api/symbols?quote=USDT&limit=100",
+              "host": ["{{binanceUrl}}"],
+              "path": ["api", "symbols"],
+              "query": [
+                {
+                  "key": "quote",
+                  "value": "USDT",
+                  "description": "Only USDT pairs for easier selection"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Trading focus UI အတွက် Binance trading pairs တွေ ရယူမယ်။ USDT pairs တွေကို focus လုပ်မယ်"
+          }
+        },
+        {
+          "name": "Search Binance Symbols (UI Trading Search)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{binanceUrl}}/api/search/BTC?limit=20",
+              "host": ["{{binanceUrl}}"],
+              "path": ["api", "search", "BTC"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Binance trading pairs search အတွက်။ Trading UI မှာ symbol search လုပ်ချင်ရင်"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Complete UI Workflow Demo",
+      "description": "Complete workflow for UI coin selection and price display",
+      "item": [
+        {
+          "name": "Step 1: Load Initial Coin List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/top?limit=20",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "top"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "UI စတင်တဲ့အခါမှာ ပထမဆုံး coin list ကို load လုပ်မယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🚀 Step 1: Loading initial coin list...');",
+                  "var response = pm.response.json();",
+                  "if (response.coins && response.coins.length > 0) {",
+                  "    // Store first 3 coins for demo",
+                  "    pm.globals.set('coin1', response.coins[0].id);",
+                  "    pm.globals.set('coin2', response.coins[1].id);",
+                  "    pm.globals.set('coin3', response.coins[2].id);",
+                  "    console.log('📋 Loaded ' + response.coins.length + ' coins');",
+                  "    console.log('🪙 Sample coins: ' + response.coins.slice(0,3).map(c => c.name).join(', '));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 2: User Selects Multiple Coins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/coin/{{coin1}}",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "coin", "{{coin1}}"]
+            },
+            "description": "User က coin တစ်ခု select လုပ်ပြီးရင် အဲ့ coin ရဲ့ details ရယူမယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('👆 Step 2: User selected a coin...');",
+                  "var response = pm.response.json();",
+                  "if (response.coin) {",
+                  "    console.log('🪙 Selected: ' + response.coin.name);",
+                  "    if (response.coin.currentPrice) {",
+                  "        console.log('💰 Price: $' + response.coin.currentPrice.usd);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 3: Get Real-time Prices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{coingeckoUrl}}/api/prices",
+              "host": ["{{coingeckoUrl}}"],
+              "path": ["api", "prices"]
+            },
+            "description": "User ရဲ့ selected coins တွေရဲ့ real-time prices တွေ ရယူမယ်"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('📊 Step 3: Getting real-time prices...');",
+                  "var response = pm.response.json();",
+                  "if (response.prices) {",
+                  "    console.log('💰 Current Prices:');",
+                  "    Object.keys(response.prices).forEach(function(coin) {",
+                  "        var data = response.prices[coin];",
+                  "        var change = data.usd_24h_change || 0;",
+                  "        var symbol = change >= 0 ? '📈' : '📉';",
+                  "        console.log('   ' + symbol + ' ' + coin + ': $' + data.usd + ' (' + change.toFixed(2) + '%)');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Global pre-request script",
+          "console.log('🌟 Testing Cryptocurrency APIs');",
+          "console.log('🔸 Binance API: ' + pm.variables.get('binanceUrl'));",
+          "console.log('🦎 CoinGecko API: ' + pm.variables.get('coingeckoUrl'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is reasonable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+          "});",
+          "",
+          "// Log response for debugging",
+          "if (pm.response.code >= 400) {",
+          "    console.log('❌ Error Response Code: ' + pm.response.code);",
+          "} else {",
+          "    console.log('✅ Request successful (' + pm.response.code + ')');",
+          "}"
+        ]
+      }
+    }
+  ]
+}

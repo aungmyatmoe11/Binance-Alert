@@ -5,7 +5,23 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "coingecko": "node coingecko-server.js",
+    "both": "node combined-server.js",
+    "config": "./config-intervals.sh show",
+    "safe": "./config-intervals.sh safe",
+    "quick": "./config-intervals.sh quick 1",
+    "aggressive": "./config-intervals.sh aggressive",
+    "start:1s": "BINANCE_INTERVAL=1 COINGECKO_INTERVAL=1 npm run both",
+    "start:2s": "BINANCE_INTERVAL=2 COINGECKO_INTERVAL=2 npm run both",
+    "start:5s": "BINANCE_INTERVAL=5 COINGECKO_INTERVAL=5 npm run both",
+    "start:10s": "BINANCE_INTERVAL=10 COINGECKO_INTERVAL=10 npm run both",
+    "binance:1s": "BINANCE_INTERVAL=1 npm start",
+    "binance:2s": "BINANCE_INTERVAL=2 npm start",
+    "binance:5s": "BINANCE_INTERVAL=5 npm start",
+    "coingecko:1s": "COINGECKO_INTERVAL=1 npm run coingecko",
+    "coingecko:2s": "COINGECKO_INTERVAL=2 npm run coingecko",
+    "coingecko:5s": "COINGECKO_INTERVAL=5 npm run coingecko"
   },
   "keywords": [
     "binance",

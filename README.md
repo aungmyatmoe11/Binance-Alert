@@ -1,15 +1,16 @@
 # Binance Alert - Cryptocurrency Price Monitor & Symbol API
 
-A comprehensive Node.js application that monitors cryptocurrency prices from Binance API using cron jobs and provides a complete REST API for symbol lookup and management.
+A comprehensive Node.js application that monitors cryptocurrency prices using **both Binance and CoinGecko APIs** with cron jobs and provides complete REST APIs for symbol lookup and management.
 
 ## 🚀 Features
 
-- ⏰ Real-time price monitoring every 2 seconds
+- ⏰ Real-time price monitoring every 2 seconds (Binance) / 5 seconds (CoinGecko)
 - 📊 Track top cryptocurrencies (BTC, ETH, BNB, DOGE)
-- 🔍 Comprehensive REST API for symbol lookup
+- 🔍 **Dual API Support**: Binance (3,200+ pairs) + CoinGecko (15,000+ coins)
 - 📋 Search and filter cryptocurrency symbols
 - 💰 Get current prices with symbol information
 - ➕ Add custom tokens (like Alpha tokens not on Binance)
+- 🪙 **KOGE Alpha Token Support**: Native CoinGecko search + contract lookup
 - 🖥️ Console logging for local development
 - 🛡️ Error handling and graceful shutdown
 - ☁️ Ready for Render deployment
@@ -28,15 +29,33 @@ A comprehensive Node.js application that monitors cryptocurrency prices from Bin
    npm install
    ```
 
-## 🏃‍♂️ Running Locally
+## 🏃‍♂️ Running Options
 
-Start the price monitor:
+You now have multiple ways to run the application:
+
+### Option 1: Binance API Only (Original)
 
 ```bash
 npm start
+# Runs on http://localhost:10000
 ```
 
-The application will:
+### Option 2: CoinGecko API Only
+
+```bash
+npm run coingecko
+# Runs on http://localhost:10001
+```
+
+### Option 3: Both APIs Together (Recommended)
+
+```bash
+npm run both
+# Binance: http://localhost:10000
+# CoinGecko: http://localhost:10001
+```
+
+Each option will:
 
 - Start monitoring prices every 2 seconds
 - Display formatted price data in the console
@@ -74,40 +93,70 @@ The application includes a comprehensive REST API for cryptocurrency symbol look
 
 ### 🔗 Quick API Examples
 
+**Binance API (Port 10000) - Trading Focus:**
+
 ```bash
 # Get API documentation
 curl http://localhost:10000/api/docs
 
-# Search for BTC-related symbols
+# Search for BTC trading pairs
 curl "http://localhost:10000/api/search/BTC"
 
-# Get specific symbol information with current price
+# Get BTCUSDT with current trading price
 curl "http://localhost:10000/api/symbol/BTCUSDT"
 
-# Get all USDT trading pairs (limited to 10)
-curl "http://localhost:10000/api/symbols?quote=USDT&limit=10"
-
-# Get current prices for tracked symbols
-curl "http://localhost:10000/api/prices"
-
-# Add your Alpha token (KOGE)
+# Add custom token (for tokens not on Binance)
 curl -X POST -H "Content-Type: application/json" \
   -d '{"symbol":"KOGEUSDT","baseAsset":"KOGE","name":"KOGE Alpha Token"}' \
   "http://localhost:10000/api/symbol/custom"
+```
 
-# Search for your added KOGE token
-curl "http://localhost:10000/api/search/KOGE"
+**CoinGecko API (Port 10001) - Research Focus:**
+
+```bash
+# Get API documentation
+curl http://localhost:10001/api/docs
+
+# Search 15,000+ cryptocurrencies
+curl "http://localhost:10001/api/search/bitcoin"
+
+# Get Bitcoin with comprehensive market data
+curl "http://localhost:10001/api/coin/bitcoin?detailed=true"
+
+# Find your KOGE Alpha token specifically
+curl "http://localhost:10001/api/koge"
+
+# Get top coins by market cap
+curl "http://localhost:10001/api/top?limit=5"
+
+# Find coin by contract address
+curl "http://localhost:10001/api/contract/0xe6df05ce8c8301223373cf5b969afcb1498c5528"
 ```
 
 ### 📄 Complete API Documentation
 
-See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for comprehensive API documentation including:
+**Binance API Documentation:**
 
-- All available endpoints
-- Request/response examples
-- How to add custom tokens
-- Error handling
-- Use cases and workflows
+- 📋 [Binance API Documentation](API_DOCUMENTATION.md) - Complete Binance API reference
+- 🔍 3,200+ trading pairs from Binance exchange
+- ⚡ Real-time trading data every 2 seconds
+- 💰 Live trading prices and volumes
+
+**CoinGecko API Documentation:**
+
+- 🦎 [CoinGecko API Documentation](COINGECKO_API_DOCUMENTATION.md) - Complete CoinGecko API reference
+- 🌍 15,000+ cryptocurrencies from 600+ exchanges
+- 📈 Market data, rankings, and trends
+- 🪙 Native KOGE Alpha token support
+- 🔗 Contract address lookup
+
+**Features Comparison:**
+| Feature | Binance API | CoinGecko API |
+|---------|-------------|---------------|
+| **Coverage** | 3,200+ trading pairs | 15,000+ cryptocurrencies |
+| **KOGE Alpha** | Custom symbol only | Native search + contract |
+| **Update Speed** | Every 2 seconds | Every 5 seconds |
+| **Best For** | Active trading | Research & discovery |
 
 ### 📮 Postman Collection
 
@@ -133,11 +182,27 @@ Ready-to-use Postman collection for testing all API endpoints:
 - ❌ Error testing scenarios
 - 📊 Response validation
 
-### 🪙 Your Alpha Token
+### 🪙 Your KOGE Alpha Token
 
-Based on the Binance Alpha URL you provided, this appears to be a KOGE token. Since it's not available on Binance spot trading, you can add it as a custom symbol:
+Your KOGE Alpha token can now be found through **both APIs**:
+
+**Method 1: CoinGecko Native Search (Recommended)**
 
 ```bash
+# Direct KOGE search
+curl "http://localhost:10001/api/koge"
+
+# Search by contract address
+curl "http://localhost:10001/api/contract/0xe6df05ce8c8301223373cf5b969afcb1498c5528"
+
+# General search
+curl "http://localhost:10001/api/search/koge"
+```
+
+**Method 2: Binance Custom Symbol**
+
+```bash
+# Add as custom symbol
 curl -X POST -H "Content-Type: application/json" \
   -d '{
     "symbol":"KOGEUSDT",
@@ -146,7 +211,15 @@ curl -X POST -H "Content-Type: application/json" \
     "name":"KOGE Alpha Token - BSC Contract: 0xe6df05ce8c8301223373cf5b969afcb1498c5528"
   }' \
   "http://localhost:10000/api/symbol/custom"
+
+# Then search for it
+curl "http://localhost:10000/api/search/KOGE"
 ```
+
+**Why Both APIs?**
+
+- **CoinGecko**: Better for research, finds real KOGE tokens, contract verification
+- **Binance**: Better for trading, custom symbols, real-time trading data
 
 ## 🔧 Configuration
 
